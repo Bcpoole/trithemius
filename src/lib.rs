@@ -1,5 +1,6 @@
-use image::{DynamicImage, ImageBuffer, Rgba};
+use image::{ImageBuffer, Rgba};
 
+/// Encode message in the alpha channel
 pub fn encode_msg(
     img: ImageBuffer<Rgba<u8>, Vec<u8>>,
     msg: &[u8],
@@ -8,12 +9,8 @@ pub fn encode_msg(
     let (width, height) = img.dimensions();
     let bytes = width * height;
 
-    if msg_len > height {
-        panic!(
-            "Input is too large! {} bytes > {} bytes.",
-            msg.len(),
-            height
-        )
+    if msg_len > bytes {
+        panic!("Input is too large! {} bytes > {} bytes.", msg.len(), bytes)
     }
 
     let mut encoded_img = ImageBuffer::<Rgba<u8>, Vec<u8>>::new(width, height);
@@ -30,4 +27,17 @@ pub fn encode_msg(
     }
 
     encoded_img
+}
+
+/// Decode message from alpha channel
+pub fn decode_msg(img: ImageBuffer<Rgba<u8>, Vec<u8>>) -> String {
+    let mut msg: Vec<u8> = Vec::new();
+
+    for (_x, _y, pixel) in img.enumerate_pixels() {
+        if pixel[3] != 255 {
+            msg.push(pixel[3])
+        }
+    }
+
+    String::from_utf8(msg).unwrap()
 }
