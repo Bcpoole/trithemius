@@ -1,0 +1,4 @@
+/target
+**/*.rs.bk
+example/*
+!example/base_img.jpg
