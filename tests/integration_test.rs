@@ -1,8 +1,10 @@
 use steganography::load_img;
 
+static IMG_PATH: &str = "example/test_img.jpg";
+
 #[test]
 fn test_alpha_encode_decode() {
-    let img = load_img("example/base_img.jpg");
+    let img = load_img(IMG_PATH);
     let in_msg = "hello";
 
     let alpha_encoded_img = steganography::encode_msg_alpha(img, in_msg.as_bytes());
@@ -13,8 +15,9 @@ fn test_alpha_encode_decode() {
 
 #[test]
 fn test_rgba_encode_decode() {
-    let img = load_img("example/base_img.jpg");
+    let img = load_img(IMG_PATH);
     let in_msg = "hello";
+
     let rgba_encoded_img = steganography::encode_msg_rgba(img, in_msg.as_bytes());
 
     let rgba_out_msg = steganography::decode_msg_rgba(rgba_encoded_img.clone());

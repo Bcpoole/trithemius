@@ -110,11 +110,48 @@ pub fn decode_msg_rgba(img: ImageBuffer<Rgba<u8>, Vec<u8>>) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    static BASE_IMG_PATH: &str = "example/test_img.jpg";
+
+    fn load_test_img(path: &str) -> ImageBuffer<Rgba<u8>, Vec<u8>> {
+        image::open(path).unwrap().to_rgba()
+    }
+
+    /// Tests that images are loaded as rgba without further transformation.
     #[test]
     fn test_load_img() {
-        let path = "example/base_img.jpg";
-        let expected = image::open(path).unwrap().to_rgba();
-        let res = load_img(path);
+        let expected = load_test_img(BASE_IMG_PATH);
+        let res = load_img(BASE_IMG_PATH);
         assert_eq!(res.to_vec(), expected.to_vec())
+    }
+
+    /// Tests that imagebuffer no longer matches the input.
+    #[test]
+    fn test_encode_msg_alpha() {
+        let expected = load_test_img(BASE_IMG_PATH);
+        let res = encode_msg_alpha(load_test_img(BASE_IMG_PATH), "test".as_bytes());
+        assert_ne!(res.to_vec(), expected.to_vec())
+    }
+
+    #[test]
+    fn test_decode_msg_alpha() {
+        let expected = "hello";
+        let res = decode_msg_alpha(load_test_img("example/test_img_encoded_alpha.png"));
+        assert_eq!(res, expected)
+    }
+
+    /// Tests that imagebuffer no longer matches the input.
+    #[test]
+    fn test_encode_msg_rgba() {
+        let expected = load_test_img(BASE_IMG_PATH);
+        let res = encode_msg_rgba(load_test_img(BASE_IMG_PATH), "test".as_bytes());
+        assert_ne!(res.to_vec(), expected.to_vec())
+    }
+
+    #[test]
+    fn test_decode_msg_rgba() {
+        let expected = "hello";
+        let res = decode_msg_rgba(load_test_img("example/test_img_encoded_rgba.png"));
+        assert_eq!(res, expected)
     }
 }
