@@ -1,157 +1,32 @@
+pub mod alpha_cypher;
+pub mod rgba_cypher;
+
 use image::{ImageBuffer, Rgba};
 
 pub fn load_img(path: &str) -> ImageBuffer<Rgba<u8>, Vec<u8>> {
     image::open(path).unwrap().to_rgba()
 }
 
-/// Encode message in the alpha channel
-pub fn encode_msg_alpha(
-    img: ImageBuffer<Rgba<u8>, Vec<u8>>,
-    msg: &[u8],
-) -> ImageBuffer<Rgba<u8>, Vec<u8>> {
-    let msg_len: u32 = msg.len() as u32;
-    let (width, height) = img.dimensions();
-    let bytes = width * height;
-
-    if msg_len > bytes {
-        panic!("Input is too large! {} bytes > {} bytes.", msg.len(), bytes)
-    }
-
-    let mut encoded_img = ImageBuffer::<Rgba<u8>, Vec<u8>>::new(width, height);
-
-    for (x, y, pixel) in img.enumerate_pixels() {
-        let idx = x + (y * width);
-        if idx < msg_len {
-            let mut encoded_pixel = pixel.clone();
-            encoded_pixel[3] = msg[idx as usize];
-            encoded_img.put_pixel(x, y, encoded_pixel);
-        } else {
-            encoded_img.put_pixel(x, y, pixel.clone());
-        }
-    }
-
-    encoded_img
-}
-
-/// Decode message from alpha channel
-pub fn decode_msg_alpha(img: ImageBuffer<Rgba<u8>, Vec<u8>>) -> String {
-    let mut msg: Vec<u8> = Vec::new();
-
-    for (_x, _y, pixel) in img.enumerate_pixels() {
-        if pixel[3] != 255 {
-            msg.push(pixel[3])
-        }
-    }
-
-    String::from_utf8(msg).unwrap()
-}
-
-/// Encode message in the rgba marking the end with three 0 bytes or whole image size, whichever is smaller.
-pub fn encode_msg_rgba(
-    img: ImageBuffer<Rgba<u8>, Vec<u8>>,
-    msg: &[u8],
-) -> ImageBuffer<Rgba<u8>, Vec<u8>> {
-    let msg_len: u32 = msg.len() as u32;
-    let (width, height) = img.dimensions();
-    let bytes = width * height * 4;
-
-    if msg_len > bytes {
-        panic!("Input is too large! {} bytes > {} bytes.", msg.len(), bytes)
-    }
-
-    let mut encoded_img = ImageBuffer::<Rgba<u8>, Vec<u8>>::new(width, height);
-
-    let mut msg_end = 3;
-    for (x, y, pixel) in img.enumerate_pixels() {
-        let mut encoded_pixel = pixel.clone();
-        for i in 0..=3 {
-            let idx = (x + (y * width)) * 4 + i;
-            if idx < msg_len {
-                encoded_pixel[i as usize] = msg[idx as usize];
-            } else if msg_end > 0 {
-                encoded_pixel[i as usize] = 0;
-                msg_end -= 1;
-            }
-        }
-        encoded_img.put_pixel(x, y, encoded_pixel);
-    }
-
-    encoded_img
-}
-
-/// Decode message from rgba
-pub fn decode_msg_rgba(img: ImageBuffer<Rgba<u8>, Vec<u8>>) -> String {
-    let mut msg: Vec<u8> = Vec::new();
-
-    let mut msg_end_counter = 0; // look for three 0 bytes
-    let mut end_of_msg = false;
-    for (_x, _y, pixel) in img.enumerate_pixels() {
-        if end_of_msg {
-            break;
-        }
-        for i in 0..=3 {
-            msg.push(pixel[i]);
-
-            if pixel[i] == 0 {
-                msg_end_counter += 1;
-                if msg_end_counter == 3 {
-                    end_of_msg = true;
-                }
-            } else {
-                msg_end_counter = 0;
-            }
-        }
-    }
-
-    let msg = String::from_utf8(msg).unwrap();
-    return msg[..(msg.len() - msg_end_counter)].to_string();
+pub trait Cypher {
+    fn encode(img: ImageBuffer<Rgba<u8>, Vec<u8>>, msg: &[u8]) -> ImageBuffer<Rgba<u8>, Vec<u8>>;
+    fn decode(img: ImageBuffer<Rgba<u8>, Vec<u8>>) -> String;
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    static BASE_IMG_PATH: &str = "example/test_img.jpg";
+    pub static BASE_IMG_PATH: &str = "example/test_img.jpg";
 
-    fn load_test_img(path: &str) -> ImageBuffer<Rgba<u8>, Vec<u8>> {
+    pub fn load_test_img(path: &str) -> ImageBuffer<Rgba<u8>, Vec<u8>> {
         image::open(path).unwrap().to_rgba()
     }
 
     /// Tests that images are loaded as rgba without further transformation.
     #[test]
     fn test_load_img() {
-        let expected = load_test_img(BASE_IMG_PATH);
+        let expected = image::open(BASE_IMG_PATH).unwrap().to_rgba();
         let res = load_img(BASE_IMG_PATH);
         assert_eq!(res.to_vec(), expected.to_vec())
-    }
-
-    /// Tests that imagebuffer no longer matches the input.
-    #[test]
-    fn test_encode_msg_alpha() {
-        let expected = load_test_img(BASE_IMG_PATH);
-        let res = encode_msg_alpha(load_test_img(BASE_IMG_PATH), "test".as_bytes());
-        assert_ne!(res.to_vec(), expected.to_vec())
-    }
-
-    #[test]
-    fn test_decode_msg_alpha() {
-        let expected = "hello";
-        let res = decode_msg_alpha(load_test_img("example/test_img_encoded_alpha.png"));
-        assert_eq!(res, expected)
-    }
-
-    /// Tests that imagebuffer no longer matches the input.
-    #[test]
-    fn test_encode_msg_rgba() {
-        let expected = load_test_img(BASE_IMG_PATH);
-        let res = encode_msg_rgba(load_test_img(BASE_IMG_PATH), "test".as_bytes());
-        assert_ne!(res.to_vec(), expected.to_vec())
-    }
-
-    #[test]
-    fn test_decode_msg_rgba() {
-        let expected = "hello";
-        let res = decode_msg_rgba(load_test_img("example/test_img_encoded_rgba.png"));
-        assert_eq!(res, expected)
     }
 }
