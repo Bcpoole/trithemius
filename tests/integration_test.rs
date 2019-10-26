@@ -1,6 +1,8 @@
+use steganography::load_img;
+
 #[test]
 fn test_alpha_encode_decode() {
-    let img = image::open("example/base_img.jpg").unwrap().to_rgba();
+    let img = load_img("example/base_img.jpg");
     let in_msg = "hello";
 
     let alpha_encoded_img = steganography::encode_msg_alpha(img, in_msg.as_bytes());
@@ -11,7 +13,7 @@ fn test_alpha_encode_decode() {
 
 #[test]
 fn test_rgba_encode_decode() {
-    let img = image::open("example/base_img.jpg").unwrap().to_rgba();
+    let img = load_img("example/base_img.jpg");
     let in_msg = "hello";
     let rgba_encoded_img = steganography::encode_msg_rgba(img, in_msg.as_bytes());
 

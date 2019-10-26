@@ -1,5 +1,9 @@
 use image::{ImageBuffer, Rgba};
 
+pub fn load_img(path: &str) -> ImageBuffer<Rgba<u8>, Vec<u8>> {
+    image::open(path).unwrap().to_rgba()
+}
+
 /// Encode message in the alpha channel
 pub fn encode_msg_alpha(
     img: ImageBuffer<Rgba<u8>, Vec<u8>>,
@@ -101,4 +105,16 @@ pub fn decode_msg_rgba(img: ImageBuffer<Rgba<u8>, Vec<u8>>) -> String {
 
     let msg = String::from_utf8(msg).unwrap();
     return msg[..(msg.len() - msg_end_counter)].to_string();
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test_load_img() {
+        let path = "example/base_img.jpg";
+        let expected = image::open(path).unwrap().to_rgba();
+        let res = load_img(path);
+        assert_eq!(res.to_vec(), expected.to_vec())
+    }
 }
