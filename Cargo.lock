@@ -327,7 +327,7 @@ dependencies = [
 
 [[package]]
 name = "trithemius"
-version = "2.0.1"
+version = "2.0.2"
 dependencies = [
  "image 0.22.3 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
