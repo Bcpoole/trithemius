@@ -1,4 +1,4 @@
-use steganography::*;
+use trithemius::*;
 
 static IMG_PATH: &str = "example/test_img.jpg";
 static TEST_MSG: &str = "test_msg";

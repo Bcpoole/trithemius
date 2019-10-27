@@ -1,4 +1,4 @@
-# steganography
+# trithemius
 Stenography library written in rust. Supports using both Alpha and full RGBA channels. Also takes in a start index for where to write and will wrap around.
 
 ## Load Image
