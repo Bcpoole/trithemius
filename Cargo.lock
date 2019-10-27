@@ -306,7 +306,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "steganography"
-version = "0.1.0"
+version = "2.0.0"
 dependencies = [
  "image 0.22.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
